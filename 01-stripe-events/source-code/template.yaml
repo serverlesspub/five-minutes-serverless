@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Vacation Tracker API
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Tracing: Active
+
+Resources:
+  PaymentEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+        Name: StripeEventBus
+
+  StripeWebhook:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location:
+        ApplicationId: arn:aws:serverlessrepo:us-east-1:721177882564:applications/generic-webhook-to-eventbridge
+        SemanticVersion: 1.3.4
+      Parameters:
+        EventBusName: !Ref PaymentEventBus
+        EventSource: stripe-events
+
+  ChargeSucceededProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/charge-processor
+      Handler: lambda.handler
+      Events:
+        OnChargeSucceeded:
+          Type: CloudWatchEvent
+          Properties:
+            EventBusName: !Ref PaymentEventBus
+            Pattern:
+              detail:
+                body:
+                  type:
+                  - charge.succeeded
+
+Outputs:
+  StripeWebhookUrl:
+    Description: Webhook URL
+    Value: !GetAtt StripeWebhook.Outputs.WebhookApiUrl
+
+  ChargeSucceededProcessor:
+    Description: Function logical ID
+    Value: !Ref ChargeSucceededProcessor

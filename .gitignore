@@ -1,0 +1,6 @@
+.DS_Store
+build
+samconfig.toml
+node_modules
+info
+raw-assets
