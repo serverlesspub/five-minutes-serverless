@@ -20,7 +20,7 @@ In this episode, we will build a Stripe events processor using AWS SAM, EventBri
 
 ![](stripe.png)
 
-As you probably know, Stripe is one of the most popular payment processors. Many of us use it in our applications.
+Stripe is one of the most popular payment processors. Many of us use it in our applications.
 
 (pause: 1)
 
