@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Vacation Tracker API
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Tracing: Active
+
+Resources:
+  BooksTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  GetBooks:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/hello-world
+      Handler: lambda.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref BooksTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref BooksTable
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /books
+            Method: GET
+
+Outputs:
+  ApiUrl:
+    Description: API URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
